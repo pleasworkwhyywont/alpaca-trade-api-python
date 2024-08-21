@@ -163,36 +163,37 @@ class _DataStream:
     async def _dispatch(self, msg):
         msg_type = msg.get('T')
         symbol = msg.get('S')
-        if msg_type == 't':
-            handler = self._handlers['trades'].get(
-                symbol, self._handlers['trades'].get('*', None))
-            if handler:
-                await handler(self._cast(msg_type, msg))
-        elif msg_type == 'q':
-            handler = self._handlers['quotes'].get(
-                symbol, self._handlers['quotes'].get('*', None))
-            if handler:
-                await handler(self._cast(msg_type, msg))
-        elif msg_type == 'b':
-            handler = self._handlers['bars'].get(
-                symbol, self._handlers['bars'].get('*', None))
-            if handler:
-                await handler(self._cast(msg_type, msg))
-        elif msg_type == 'u':
-            handler = self._handlers['updatedBars'].get(
-                symbol, self._handlers['updatedBars'].get('*', None))
-            if handler:
-                await handler(self._cast(msg_type, msg))
-        elif msg_type == 'd':
-            handler = self._handlers['dailyBars'].get(
-                symbol, self._handlers['dailyBars'].get('*', None))
-            if handler:
-                await handler(self._cast(msg_type, msg))
-        elif msg_type == 'subscription':
-            sub = [f'{k}: {msg.get(k, [])}' for k in self._handlers]
-            log.info(f'subscribed to {", ".join(sub)}')
-        elif msg_type == 'error':
-            log.error(f'error: {msg.get("msg")} ({msg.get("code")})')
+        switch msg_type:
+            case 't':
+                handler = self._handlers['trades'].get(
+                    symbol, self._handlers['trades'].get('*', None))
+                if handler:
+                    await handler(self._cast(msg_type, msg))
+        case 'q':
+                handler = self._handlers['quotes'].get(
+                    symbol, self._handlers['quotes'].get('*', None))
+                if handler:
+                    await handler(self._cast(msg_type, msg))
+        case 'b':
+                handler = self._handlers['bars'].get(
+                    symbol, self._handlers['bars'].get('*', None))
+                if handler:
+                    await handler(self._cast(msg_type, msg))
+        case 'u':
+                handler = self._handlers['updatedBars'].get(
+                    symbol, self._handlers['updatedBars'].get('*', None))
+                if handler:
+                    await handler(self._cast(msg_type, msg))
+        case msg_type == 'd':
+                handler = self._handlers['dailyBars'].get(
+                    symbol, self._handlers['dailyBars'].get('*', None))
+                if handler:
+                    await handler(self._cast(msg_type, msg))
+        case 'subscription':
+                sub = [f'{k}: {msg.get(k, [])}' for k in self._handlers]
+                log.info(f'subscribed to {", ".join(sub)}')
+        case 'error':
+                log.error(f'error: {msg.get("msg")} ({msg.get("code")})')
 
     def _subscribe(self, handler, symbols, handlers):
         _ensure_coroutine(handler)
